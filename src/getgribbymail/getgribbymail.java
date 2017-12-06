@@ -27,50 +27,48 @@ public class getgribbymail {
   final String NOAA = "query@saildocs.com";
   final String password = "javamail29";
   final String host = "pop.gmail.com";
-  int lattitudepg, lattitudepd, longitudepg, longitudepd;
+  double lattitudepg=0.0, lattitudepd=0.0, longitudepg=0.0, longitudepd=0.0;
 
-	public void setdonneeenvoyee(int lattitudepg, int lattitudepd, int longitudepg, int longitudepd) {
+	public void setdonneeenvoyee(double lattitudepg, double lattitudepd, double longitudepg, double longitudepd) {
 		setlattitudepg(lattitudepg);
 		setlattitudepd(lattitudepd);
 		setlongitudepg(longitudepg);
 		setlongitudepd(longitudepd);
 	}
 
-	private void setlattitudepg(int lattitudepg) {
+	private void setlattitudepg(double lattitudepg) {
 		this.lattitudepg = lattitudepg;
 	}
 
-	private void setlongitudepg(int longitudepg) {
+	private void setlongitudepg(double longitudepg) {
 		this.longitudepg = longitudepg;
 	}
 
-	private void setlattitudepd(int lattitudepd) {
+	private void setlattitudepd(double lattitudepd) {
 		this.lattitudepd = lattitudepd;
 	}
 
-	private void setlongitudepd(int longitudepd) {
+	private void setlongitudepd(double longitudepd) {
 		this.longitudepd = longitudepd;
 	}
 
-	private int getlongitudepg() {
+	public double getlongitudepg() {
 		return longitudepg;
 	}
 
-	private int getlattitudepg() {
+	public double getlattitudepg() {
 		return lattitudepg;
 	}
 
-	private int getlattitudepd() {
+	public double getlattitudepd() {
 		return lattitudepd;
 	}
 
-	private int getlongitudepd() {
+	public double getlongitudepd() {
 		return longitudepd;
 	}
 
-	public String envoiMessage() throws InterruptedException {
-
-		String titregrib = "";
+	private void envoiMessage() {
 
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", "true");
@@ -101,19 +99,17 @@ public class getgribbymail {
 
 			System.out.println("Done");
 
-			Thread.sleep(4000); // en attendant la reception du message
-			titregrib = RecupMessage();
-
-			return titregrib;
-
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
 		}
+		
+		
 	}
 
-	public String RecupMessage() {
-		String titregrib = "";
+	private Message RecupMessage() {
 
+		Message monmessage=null;
+		
 		try {
 
 			// create properties field
@@ -135,12 +131,8 @@ public class getgribbymail {
 
 			// retrieve the messages from the folder in an array
 			Message[] messages = emailFolder.getMessages();
+			monmessage=messages[messages.length - 1];
 
-			titregrib = recuperationfichiergribenpiecejointe(messages[messages.length - 1]);
-
-			// close the store and folder objects
-			emailFolder.close();
-			store.close();
 
 		} catch (NoSuchProviderException e) {
 			e.printStackTrace();
@@ -149,7 +141,7 @@ public class getgribbymail {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return titregrib;
+		return monmessage;
 	}
 
 	private String recuperationfichiergribenpiecejointe(Message message)
@@ -159,7 +151,7 @@ public class getgribbymail {
 		String nomfichier = "";
 
 		Multipart mp = (Multipart) message.getContent();
-		int n = mp.getCount();
+		double n = mp.getCount();
 		for (int j = 0; j < n; j++) {
 			Part part = mp.getBodyPart(j);
 			disposition = part.getDisposition();
@@ -180,4 +172,28 @@ public class getgribbymail {
 
 		return nomfichier;
 	}
+	
+	public String recuperationfichiergrib(double lattitudepg, double lattitudepd, double longitudepg, double longitudepd) throws FileNotFoundException, MessagingException, IOException, InterruptedException {
+		
+		
+		setdonneeenvoyee(lattitudepg, lattitudepd, longitudepg, longitudepd);
+		
+		Message monmessage=null;
+		
+		envoiMessage();
+		
+		Thread.sleep(4000);
+		
+		monmessage=RecupMessage();
+		
+		String lienversfichier="";
+		
+		lienversfichier = recuperationfichiergribenpiecejointe(monmessage);
+		
+		return lienversfichier;
+		
+		
+	}
+	
+	
 }
